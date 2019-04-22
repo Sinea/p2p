@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"fmt"
+	"math"
 )
 
 type swarm struct {
@@ -22,20 +23,25 @@ func (s *swarm) updateRoutingTable() {
 	//}
 }
 
-func (s *swarm) findRoute(from, to PeerID) []PeerID {
+func (s *swarm) findRoute(from, to PeerID) [][]PeerID {
 	l := s.lengths(from, to, []PeerID{from})
-	p := []PeerID{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	routes := make([][]PeerID, 0)
+	size := math.MaxInt32
 	for _, t := range l {
-		if len(t) < len(p) {
-			p = t
+		tLen := len(t)
+		if tLen < size {
+			size = len(t)
+			routes = make([][]PeerID, 0)
+		} else if tLen > size {
+			continue
 		}
+		routes = append(routes, t)
 	}
 
-	return p
+	return routes
 }
 
 func (s *swarm) lengths(from, to PeerID, visited []PeerID) [][]PeerID {
-	//fmt.Printf("%d -> %d : %d\n", from, to, visited)
 	peers := s.peerConnections[from]
 	result := make([][]PeerID, 0)
 	collected := make([][]PeerID, 0)

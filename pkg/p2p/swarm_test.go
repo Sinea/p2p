@@ -55,15 +55,14 @@ func TestSwarm_BuildRoutingTable(t *testing.T) {
 		peerConnections: make(map[PeerID][]PeerID),
 	}
 
-	s.setConnections(0, []PeerID{1, 5})
-	s.setConnections(1, []PeerID{0, 2, 5})
-	s.setConnections(2, []PeerID{1, 3})
-	s.setConnections(3, []PeerID{2, 4, 5})
-	s.setConnections(4, []PeerID{3, 6})
-	s.setConnections(5, []PeerID{0, 3, 1, 6})
-	s.setConnections(6, []PeerID{4, 5})
+	s.setConnections(0, []PeerID{1, 2, 3, 4})
+	s.setConnections(1, []PeerID{0, 5})
+	s.setConnections(2, []PeerID{0, 5})
+	s.setConnections(3, []PeerID{0, 5})
+	s.setConnections(4, []PeerID{0, 5})
+	s.setConnections(5, []PeerID{1, 2, 3, 4})
 
-	fmt.Printf("Route from %d to %d goes through %d\n", 0, 2, s.findRoute(PeerID(6), PeerID(1)))
+	fmt.Printf("Route from %d to %d goes through %d\n", 0, 2, s.findRoute(PeerID(0), PeerID(5)))
 	//for i := 0; i < 6; i++ {
 	//	for j := 0; j < 6; j++ {
 	//		if i == j {
