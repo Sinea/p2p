@@ -1,7 +1,9 @@
 package p2p
 
 import (
+	"errors"
 	"fmt"
+	"net"
 )
 
 type swarm struct {
@@ -10,6 +12,29 @@ type swarm struct {
 	peers           map[PeerID]Peer
 	peerRoutes      map[PeerID]Peer
 	peerConnections map[PeerID][]PeerID
+}
+
+func (s *swarm) Join(address string) error {
+	connection, err := net.Dial("tcp", address)
+	if err != nil {
+		return err
+	}
+	s.handshake(connection)
+	return nil
+}
+
+func (s *swarm) Listen(address string) error {
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		return err
+	}
+	for {
+		connection, err := listener.Accept()
+		if err != nil {
+			return err
+		}
+		go s.handshake(connection)
+	}
 }
 
 func (s *swarm) setConnections(from PeerID, to []PeerID) {
@@ -25,11 +50,11 @@ func (s *swarm) Route(id PeerID, b []byte) error {
 	return fmt.Errorf("no route found to peer %d", id)
 }
 
-func (s *swarm) Node(id PeerID) Node {
+func (s *swarm) Node(id PeerID) (Node, error) {
 	if p, ok := s.nodes[id]; ok {
-		return p
+		return p, nil
 	}
-	return nil
+	return nil, errors.New("not found")
 }
 
 func New(id PeerID) Swarm {
@@ -39,9 +64,4 @@ func New(id PeerID) Swarm {
 		peerRoutes:      make(map[PeerID]Peer),
 		peerConnections: make(map[PeerID][]PeerID),
 	}
-}
-
-type Route struct {
-	Distance uint32
-	Through  PeerID
 }

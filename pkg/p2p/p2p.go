@@ -1,6 +1,6 @@
 package p2p
 
-type PeerID uint32
+type PeerID uint64
 
 type Node interface {
 	Write([]byte) error
@@ -15,6 +15,9 @@ type Router interface {
 }
 
 type Swarm interface {
-	Node(PeerID) Node
+	Node(PeerID) (Node, error)
+	Listen(address string) error
+	Join(address string) error
+
 	setConnections(PeerID, []PeerID)
 }

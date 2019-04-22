@@ -1,9 +1,13 @@
 package p2p
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
 type peer struct {
-	id PeerID
+	id         PeerID
+	connection net.Conn
 }
 
 func (p *peer) send(id PeerID, d []byte) error {
