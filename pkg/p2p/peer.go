@@ -7,6 +7,7 @@ type peer struct {
 }
 
 func (p *peer) send(id PeerID, d []byte) error {
+	fmt.Printf("Send in %d\n", p.id)
 	fmt.Printf("Writing to socket of node %d: %s\n", id, d)
 	return nil
 }

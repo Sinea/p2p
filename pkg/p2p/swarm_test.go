@@ -1,7 +1,6 @@
 package p2p
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -25,8 +24,8 @@ func TestSwarm_Node(t *testing.T) {
 }
 
 func TestSwarm_Node2(t *testing.T) {
-	s := New()
-	n := s.Node(0)
+	s := New(0)
+	n := s.Node(1)
 
 	assert.Nil(t, n)
 }
@@ -44,32 +43,26 @@ func TestSwarm_InvalidRoute(t *testing.T) {
 
 func TestSwarm_BuildRoutingTable(t *testing.T) {
 	s := &swarm{
-		nodes: map[PeerID]Node{
-			0: nil,
-			1: nil,
-			2: nil,
-			3: nil,
-			4: nil,
-		},
+		localID:         0,
 		peerRoutes:      make(map[PeerID]Peer),
 		peerConnections: make(map[PeerID][]PeerID),
 	}
 
-	s.setConnections(0, []PeerID{1, 2, 3, 4})
-	s.setConnections(1, []PeerID{0, 5})
-	s.setConnections(2, []PeerID{0, 5})
-	s.setConnections(3, []PeerID{0, 5})
-	s.setConnections(4, []PeerID{0, 5})
-	s.setConnections(5, []PeerID{1, 2, 3, 4})
+	s.nodes = map[PeerID]Node{
+		1: &peer{1},
+		2: &peer{2},
+		3: &proxy{3, s},
+	}
 
-	fmt.Printf("Route from %d to %d goes through %d\n", 0, 2, s.findRoute(PeerID(0), PeerID(5)))
-	//for i := 0; i < 6; i++ {
-	//	for j := 0; j < 6; j++ {
-	//		if i == j {
-	//			continue
-	//		}
-	//		fmt.Printf("Route from %d to %d goes through %d\n", i, j, s.findRoute(PeerID(i), PeerID(j)))
-	//	}
-	//}
+	s.peers = map[PeerID]Peer{
+		1: &peer{1},
+		2: &peer{2},
+	}
 
+	s.setConnections(0, []PeerID{1, 2})
+	s.setConnections(1, []PeerID{0, 2, 3})
+	s.setConnections(2, []PeerID{0, 1})
+	s.setConnections(3, []PeerID{1})
+
+	s.Node(3).Write([]byte("hello world"))
 }
