@@ -1,5 +1,9 @@
 package p2p
 
+const (
+	header = 0xAC
+)
+
 type PeerID uint64
 
 type Node interface {
@@ -8,6 +12,7 @@ type Node interface {
 
 type Peer interface {
 	send(PeerID, []byte) error
+	read() error
 }
 
 type Router interface {

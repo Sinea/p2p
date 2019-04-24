@@ -19,7 +19,7 @@ func (s *swarm) Join(address string) error {
 	if err != nil {
 		return err
 	}
-	s.handshake(connection)
+	s.handshake(connection, Candidate)
 	return nil
 }
 
@@ -28,12 +28,25 @@ func (s *swarm) Listen(address string) error {
 	if err != nil {
 		return err
 	}
+	// For now
+	go s.read()
+
 	for {
 		connection, err := listener.Accept()
 		if err != nil {
 			return err
 		}
-		go s.handshake(connection)
+		go s.handshake(connection, Gateway)
+	}
+}
+
+func (s *swarm) read() {
+	for {
+		for id, p := range s.peers {
+			if err := p.read(); err != nil {
+				fmt.Printf("error reading from peer %d\n", id)
+			}
+		}
 	}
 }
 
@@ -63,5 +76,6 @@ func New(id PeerID) Swarm {
 		nodes:           make(map[PeerID]Node),
 		peerRoutes:      make(map[PeerID]Peer),
 		peerConnections: make(map[PeerID][]PeerID),
+		peers:           make(map[PeerID]Peer),
 	}
 }
