@@ -2,18 +2,24 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"p2p/pkg/p2p"
 	"time"
 )
 
 func main() {
-	swarm := p2p.New(p2p.PeerID(1))
-	go swarm.Listen("0.0.0.0:1111")
-	swarm.Join("0.0.0.0:2222")
-	if node, err := swarm.Node(0); err == nil {
-		node.Write([]byte("hello world!"))
-	} else {
-		fmt.Println(err)
+	app := &application{}
+	app.network = p2p.New(p2p.NodeID(1), app)
+
+	go func() {
+		if err := app.network.Listen("0.0.0.0:1111"); err != nil {
+			log.Fatalf("Error listening: %s\n", err)
+		}
+	}()
+
+	if err := app.network.Join("0.0.0.0:2222"); err != nil {
+		fmt.Printf("Error joining: %s\n", err)
 	}
+
 	time.Sleep(time.Hour)
 }

@@ -2,62 +2,63 @@ package p2p
 
 import (
 	"encoding/binary"
-	"fmt"
+	"errors"
 	"net"
 )
 
 type Role int
 
 const (
-	Candidate Role = 1 << iota
-	Gateway
+	joinToken = "some token"
 )
 
-func (s *swarm) handshake(connection net.Conn, role Role) {
-	closer := func(c net.Conn) {
-		if err := c.Close(); err != nil {
-			fmt.Printf("Error closing connection: %s\n", err)
+// Send token and wait for generated id
+func joinNetwork(connection net.Conn) (uint16, uint16, error) {
+	p := Proto{connection: connection, buffer: []byte{}}
+	// Send the join token
+	if err := p.Write(join, []byte(joinToken)); err != nil {
+		return 0, 0, err
+	}
+
+	// Wait for a reply
+	command, data, err := p.Read()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if command == accepted {
+		myID := binary.BigEndian.Uint16(data[0:2])
+		remoteID := binary.BigEndian.Uint16(data[2:4])
+		return myID, remoteID, nil
+	}
+
+	return 0, 0, errors.New("error joining network")
+}
+
+// Wait for token, check the token, send back a generated id
+func acceptNode(connection net.Conn) (uint16, error) {
+	p := Proto{connection: connection, buffer: []byte{}}
+	command, data, err := p.Read()
+	if err != nil {
+		return 0, err
+	}
+
+	if command != join {
+		return 0, errors.New("no join message received")
+	}
+
+	if string(data) != joinToken {
+		err := p.Write(rejected, []byte("invalid join token"))
+		if err != nil {
+			return 0, err
 		}
-	}
-	fmt.Printf("Running handshake with %s\n", connection.RemoteAddr())
-	// Write magic header
-	magic := make([]byte, 9)
-	magic[0] = header
-
-	binary.BigEndian.PutUint64(magic[1:], uint64(s.localID))
-	if n, err := connection.Write(magic); err != nil {
-		fmt.Printf("Error writing magic: %s\n", err)
-		closer(connection)
-		return
-	} else if n < len(magic) {
-		fmt.Printf("Wrote only %d bytes\n", n)
-		closer(connection)
-		return
+	} else {
+		err := p.Write(accepted, []byte{0, 22, 0, 33})
+		if err != nil {
+			return 0, err
+		}
+		return 33, nil
 	}
 
-	receivedMagic := make([]byte, 9)
-
-	if n, err := connection.Read(receivedMagic); err != nil {
-		fmt.Printf("Error reading magic: %s\n", err)
-		closer(connection)
-		return
-	} else if n != 9 {
-		fmt.Printf("Read only %d bytes\n", n)
-		closer(connection)
-		return
-	}
-
-	fmt.Printf("Received magic %d\n", receivedMagic)
-
-	if receivedMagic[0] != header {
-		fmt.Printf("Received %d as magic header :(. Bye!\n", receivedMagic[0])
-		return
-	}
-
-	remote := PeerID(binary.BigEndian.Uint64(receivedMagic[1:]))
-	fmt.Printf("Hello %d\n", remote)
-
-	pp := &peer{remote, connection, make([]byte, 0)}
-	s.peers[remote] = pp
-	s.nodes[remote] = pp
+	return 0, nil
 }

@@ -4,31 +4,31 @@ import "math"
 
 // Ugly code. Refactor
 
-func (s *swarm) updateRoutingTable() {
-	s.peerRoutes = make(map[PeerID]Peer)
-	for id := range s.nodes {
-		if id == s.localID || s.peers[id] != nil {
+func (n *network) updateRoutingTable() {
+	n.peerRoutes = make(map[NodeID]Peer)
+	for id := range n.nodes {
+		if id == n.localID || n.peers[id] != nil {
 			continue
 		}
-		routes := s.findRoute(s.localID, id)
+		routes := n.findRoute(n.localID, id)
 		for _, x := range routes {
 			if len(x) > 0 {
-				s.peerRoutes[id] = s.nodes[x[1]].(Peer)
+				n.peerRoutes[id] = n.nodes[x[1]].(Peer)
 				break
 			}
 		}
 	}
 }
 
-func (s *swarm) findRoute(from, to PeerID) [][]PeerID {
-	l := s.paths(from, to, []PeerID{from})
-	routes := make([][]PeerID, 0)
+func (n *network) findRoute(from, to NodeID) [][]NodeID {
+	l := n.paths(from, to, []NodeID{from})
+	routes := make([][]NodeID, 0)
 	size := math.MaxInt32
 	for _, t := range l {
 		tLen := len(t)
 		if tLen < size {
 			size = len(t)
-			routes = make([][]PeerID, 0)
+			routes = make([][]NodeID, 0)
 		} else if tLen > size {
 			continue
 		}
@@ -38,10 +38,10 @@ func (s *swarm) findRoute(from, to PeerID) [][]PeerID {
 	return routes
 }
 
-func (s *swarm) paths(from, to PeerID, visited []PeerID) [][]PeerID {
-	peers := s.peerConnections[from]
-	result := make([][]PeerID, 0)
-	collected := make([][]PeerID, 0)
+func (n *network) paths(from, to NodeID, visited []NodeID) [][]NodeID {
+	peers := n.peerConnections[from]
+	result := make([][]NodeID, 0)
+	collected := make([][]NodeID, 0)
 	for _, t := range peers {
 		if t == to {
 			collected = append(collected, append(visited, to))
@@ -54,7 +54,7 @@ func (s *swarm) paths(from, to PeerID, visited []PeerID) [][]PeerID {
 	}
 	for _, t := range result {
 		v := t[len(t)-1]
-		z := s.paths(v, to, t)
+		z := n.paths(v, to, t)
 		for _, zz := range z {
 			collected = append(collected, zz)
 		}
@@ -62,7 +62,7 @@ func (s *swarm) paths(from, to PeerID, visited []PeerID) [][]PeerID {
 	return collected
 }
 
-func contains(needle PeerID, haystack []PeerID) bool {
+func contains(needle NodeID, haystack []NodeID) bool {
 	for _, t := range haystack {
 		if t == needle {
 			return true

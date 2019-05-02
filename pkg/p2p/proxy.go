@@ -1,13 +1,11 @@
 package p2p
 
-import "fmt"
-
 type proxy struct {
-	id     PeerID
+	id     NodeID
 	router Router
 }
 
 func (p *proxy) Write(d []byte) error {
-	fmt.Printf("Will route message\n")
+	//fmt.Printf("Will route message\n")
 	return p.router.Route(p.id, d)
 }

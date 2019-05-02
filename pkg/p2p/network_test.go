@@ -6,13 +6,13 @@ import (
 )
 
 func TestSwarm_Node(t *testing.T) {
-	s := &swarm{}
-	s.nodes = map[PeerID]Node{
+	s := &network{}
+	s.nodes = map[NodeID]Node{
 		0: &peer{0},
 		1: &proxy{1, s},
 		2: &proxy{2, s},
 	}
-	s.peerRoutes = map[PeerID]Peer{
+	s.peerRoutes = map[NodeID]Peer{
 		1: s.nodes[0].(Peer),
 	}
 
@@ -31,8 +31,8 @@ func TestSwarm_Node2(t *testing.T) {
 }
 
 func TestSwarm_InvalidRoute(t *testing.T) {
-	s := &swarm{}
-	s.nodes = map[PeerID]Node{
+	s := &network{}
+	s.nodes = map[NodeID]Node{
 		0: &peer{0},
 		1: &proxy{1, s},
 	}
@@ -42,27 +42,27 @@ func TestSwarm_InvalidRoute(t *testing.T) {
 }
 
 func TestSwarm_BuildRoutingTable(t *testing.T) {
-	s := &swarm{
+	s := &network{
 		localID:         0,
-		peerRoutes:      make(map[PeerID]Peer),
-		peerConnections: make(map[PeerID][]PeerID),
+		peerRoutes:      make(map[NodeID]Peer),
+		peerConnections: make(map[NodeID][]NodeID),
 	}
 
-	s.nodes = map[PeerID]Node{
+	s.nodes = map[NodeID]Node{
 		1: &peer{1},
 		2: &peer{2},
 		3: &proxy{3, s},
 	}
 
-	s.peers = map[PeerID]Peer{
+	s.peers = map[NodeID]Peer{
 		1: &peer{1},
 		2: &peer{2},
 	}
 
-	s.setConnections(0, []PeerID{1, 2})
-	s.setConnections(1, []PeerID{0, 2, 3})
-	s.setConnections(2, []PeerID{0, 1})
-	s.setConnections(3, []PeerID{1})
+	s.setConnections(0, []NodeID{1, 2})
+	s.setConnections(1, []NodeID{0, 2, 3})
+	s.setConnections(2, []NodeID{0, 1})
+	s.setConnections(3, []NodeID{1})
 
 	s.Node(3).Write([]byte("hello world"))
 }

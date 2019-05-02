@@ -2,53 +2,61 @@ package p2p
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"net"
 )
 
+const (
+	bufferSize = 1000
+)
+
 type peer struct {
-	id         PeerID
+	id         NodeID
 	connection net.Conn
 	buffer     []byte
+	handler    MessageHandler
+	localID    NodeID
+	protocol   *Proto
+}
+
+func (p *peer) ID() NodeID {
+	return p.id
 }
 
 func (p *peer) read() error {
-	buffer := make([]byte, 1000)
-	if n, err := p.connection.Read(buffer); err != nil {
+	cmd, data, err := p.protocol.Read()
+
+	if err != nil {
 		return err
-	} else {
-		p.buffer = append(p.buffer, buffer[:n]...)
 	}
 
-	if len(p.buffer) < 13 {
-		return nil
-	}
-
-	if p.buffer[0] != header {
-		return errors.New("invalid message header")
-	}
-
-	id := binary.BigEndian.Uint64(p.buffer[1:9])
-	size := binary.BigEndian.Uint32(p.buffer[9:13])
-
-	fmt.Printf("Received %d bytes from %d\n", size, id)
-	if t := p.buffer[13:]; uint32(len(t)) >= size {
-		fmt.Println(string(p.buffer[13 : 13+size]))
+	switch cmd {
+	case message:
+		id, body := unpackData(data)
+		if id == p.localID {
+			p.handler.HandleMessage(body)
+		} else {
+			fmt.Println("Just pass")
+		}
 	}
 
 	return nil
 }
 
-func (p *peer) send(id PeerID, d []byte) error {
-	fmt.Printf("Send in %d\n", p.id)
-	fmt.Printf("Writing to socket of node %d: %s\n", id, d)
+func (p *peer) send(id NodeID, command uint8, d []byte) error {
+	//fmt.Printf("Send in %d\n", p.id)
+	//fmt.Printf("Writing to socket of node %d: %s\n", id, d)
 
-	tmp := make([]byte, 13+len(d))
+	tmp := make([]byte, 8+len(d))
 	tmp[0] = header
-	binary.BigEndian.PutUint64(tmp[1:9], uint64(id))
-	binary.BigEndian.PutUint32(tmp[9:13], uint32(len(d)))
-	copy(tmp[13:], d)
+	tmp[1] = command
+	// Destination node
+	binary.BigEndian.PutUint16(tmp[2:4], uint16(id))
+	// Payload length
+	binary.BigEndian.PutUint32(tmp[4:8], uint32(len(d)))
+	// Write payload
+	copy(tmp[8:], d)
+
 	if _, err := p.connection.Write(tmp); err != nil {
 		return err
 	}
@@ -56,6 +64,19 @@ func (p *peer) send(id PeerID, d []byte) error {
 }
 
 func (p *peer) Write(d []byte) error {
-	fmt.Printf("Writing to node %d: %s\n", p.id, d)
-	return p.send(p.id, d)
+	//fmt.Printf("Writing to node %d: %s\n", p.id, d)
+	m := packData(p.id, d)
+	return p.protocol.Write(message, m)
+}
+
+func packData(id NodeID, data []byte) []byte {
+	message := make([]byte, 2+len(data))
+	binary.BigEndian.PutUint16(message[:2], uint16(id))
+	copy(message[2:], data)
+	return message
+}
+
+func unpackData(data []byte) (NodeID, []byte) {
+	id := NodeID(binary.BigEndian.Uint16(data[:2]))
+	return id, data[2:]
 }
