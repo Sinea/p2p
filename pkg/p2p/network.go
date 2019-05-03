@@ -26,9 +26,9 @@ func (n *network) Join(address string) error {
 	}
 	n.localID = NodeID(allocatedID)
 	n.peers[NodeID(allocatorID)] = &peer{
-		localID:    n.localID,
-		connection: connection,
-		protocol:   &Proto{connection: connection, buffer: []byte{}},
+		localID:  n.localID,
+		protocol: &Proto{connection: connection, buffer: []byte{}},
+		handler:  n.application,
 	}
 	fmt.Printf("Accepted by %d\n", allocatorID)
 	fmt.Printf("Allocated id %d\n", allocatedID)
@@ -55,9 +55,10 @@ func (n *network) Listen(address string) error {
 		} else {
 			fmt.Println("Accepted new node")
 			peer := &peer{
-				localID:    n.localID,
-				connection: connection,
-				protocol:   &Proto{connection: connection, buffer: []byte{}},
+				id:       NodeID(allocatedID),
+				localID:  n.localID,
+				protocol: &Proto{connection: connection, buffer: []byte{}},
+				handler:  n.application,
 			}
 			n.peers[NodeID(allocatedID)] = peer
 			n.nodes[NodeID(allocatedID)] = peer
@@ -98,9 +99,9 @@ func (n *network) Node(id NodeID) (Node, error) {
 	return nil, errors.New("not found")
 }
 
-func New(id NodeID, listener Application) Swarm {
+func New(id NodeID, app Application) Swarm {
 	return &network{
-		application:     listener,
+		application:     app,
 		localID:         id,
 		nodes:           make(map[NodeID]Node),
 		peerRoutes:      make(map[NodeID]Peer),

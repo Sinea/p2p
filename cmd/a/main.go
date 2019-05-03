@@ -37,7 +37,7 @@ func (*app) Left(id p2p.NodeID) {
 
 func main() {
 	app := &app{}
-	app.network = p2p.New(p2p.NodeID(0), app)
+	app.network = p2p.New(p2p.NodeID(22), app)
 	if err := app.network.Listen("0.0.0.0:2222"); err != nil {
 		log.Fatalf("Error listening: %s\n", err)
 	}

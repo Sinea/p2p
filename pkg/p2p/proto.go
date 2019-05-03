@@ -3,7 +3,6 @@ package p2p
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"net"
 )
 
@@ -54,8 +53,6 @@ func (p *Proto) Read() (uint8, []byte, error) {
 	if p.buffer[0] != header {
 		return 0, nil, errors.New("invalid header")
 	}
-
-	fmt.Printf("%x\n", p.buffer)
 
 	payloadLength := binary.BigEndian.Uint32(p.buffer[2:6])
 	if uint32(len(p.buffer)) < payloadLength+6 {

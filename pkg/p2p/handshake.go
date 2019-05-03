@@ -53,7 +53,7 @@ func acceptNode(connection net.Conn) (uint16, error) {
 			return 0, err
 		}
 	} else {
-		err := p.Write(accepted, []byte{0, 22, 0, 33})
+		err := p.Write(accepted, []byte{0, 33, 0, 22})
 		if err != nil {
 			return 0, err
 		}

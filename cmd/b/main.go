@@ -9,7 +9,7 @@ import (
 
 func main() {
 	app := &application{}
-	app.network = p2p.New(p2p.NodeID(1), app)
+	app.network = p2p.New(p2p.NodeID(99), app)
 
 	go func() {
 		if err := app.network.Listen("0.0.0.0:1111"); err != nil {

@@ -3,7 +3,6 @@ package p2p
 import (
 	"encoding/binary"
 	"fmt"
-	"net"
 )
 
 const (
@@ -11,12 +10,10 @@ const (
 )
 
 type peer struct {
-	id         NodeID
-	connection net.Conn
-	buffer     []byte
-	handler    MessageHandler
-	localID    NodeID
-	protocol   *Proto
+	id       NodeID
+	handler  MessageHandler
+	localID  NodeID
+	protocol *Proto
 }
 
 func (p *peer) ID() NodeID {
@@ -44,22 +41,7 @@ func (p *peer) read() error {
 }
 
 func (p *peer) send(id NodeID, command uint8, d []byte) error {
-	//fmt.Printf("Send in %d\n", p.id)
-	//fmt.Printf("Writing to socket of node %d: %s\n", id, d)
-
-	tmp := make([]byte, 8+len(d))
-	tmp[0] = header
-	tmp[1] = command
-	// Destination node
-	binary.BigEndian.PutUint16(tmp[2:4], uint16(id))
-	// Payload length
-	binary.BigEndian.PutUint32(tmp[4:8], uint32(len(d)))
-	// Write payload
-	copy(tmp[8:], d)
-
-	if _, err := p.connection.Write(tmp); err != nil {
-		return err
-	}
+	panic("x")
 	return nil
 }
 
