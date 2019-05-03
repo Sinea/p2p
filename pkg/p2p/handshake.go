@@ -1,22 +1,17 @@
 package p2p
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"net"
 )
 
-type Role int
-
-const (
-	joinToken = "some token"
-)
-
 // Send token and wait for generated id
-func joinNetwork(connection net.Conn) (uint16, uint16, error) {
+func joinNetwork(connection net.Conn, token []byte) (uint16, uint16, error) {
 	p := Proto{connection: connection, buffer: []byte{}}
 	// Send the join token
-	if err := p.Write(join, []byte(joinToken)); err != nil {
+	if err := p.Write(join, token); err != nil {
 		return 0, 0, err
 	}
 
@@ -36,9 +31,9 @@ func joinNetwork(connection net.Conn) (uint16, uint16, error) {
 }
 
 // Wait for token, check the token, send back a generated id
-func acceptNode(connection net.Conn) (uint16, error) {
+func acceptNode(connection net.Conn, token []byte) (uint16, error) {
 	p := Proto{connection: connection, buffer: []byte{}}
-	command, data, err := p.Read()
+	command, receivedToken, err := p.Read()
 	if err != nil {
 		return 0, err
 	}
@@ -47,11 +42,12 @@ func acceptNode(connection net.Conn) (uint16, error) {
 		return 0, errors.New("no join message received")
 	}
 
-	if string(data) != joinToken {
+	if bytes.Compare(token, receivedToken) != 0 {
 		err := p.Write(rejected, []byte("invalid join token"))
 		if err != nil {
 			return 0, err
 		}
+		return 0, errors.New("invalid join token")
 	} else {
 		err := p.Write(accepted, []byte{0, 33, 0, 22})
 		if err != nil {

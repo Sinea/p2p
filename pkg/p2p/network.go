@@ -7,6 +7,7 @@ import (
 )
 
 type network struct {
+	token           []byte
 	application     Application
 	localID         NodeID
 	nodes           map[NodeID]Node
@@ -20,7 +21,7 @@ func (n *network) Join(address string) error {
 	if err != nil {
 		return err
 	}
-	allocatedID, allocatorID, err := joinNetwork(connection)
+	allocatedID, allocatorID, err := joinNetwork(connection, n.token)
 	if err != nil {
 		return err
 	}
@@ -49,7 +50,7 @@ func (n *network) Listen(address string) error {
 		if err != nil {
 			return err
 		}
-		allocatedID, err := acceptNode(connection)
+		allocatedID, err := acceptNode(connection, n.token)
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -99,8 +100,9 @@ func (n *network) Node(id NodeID) (Node, error) {
 	return nil, errors.New("not found")
 }
 
-func New(id NodeID, app Application) Swarm {
+func New(id NodeID, app Application, token []byte) Swarm {
 	return &network{
+		token:           token,
 		application:     app,
 		localID:         id,
 		nodes:           make(map[NodeID]Node),
