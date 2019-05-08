@@ -18,7 +18,6 @@ type Node interface {
 
 type Peer interface {
 	ID() NodeID
-	send(NodeID, uint8, []byte) error
 	read() error
 }
 

@@ -40,11 +40,6 @@ func (p *peer) read() error {
 	return nil
 }
 
-func (p *peer) send(id NodeID, command uint8, d []byte) error {
-	panic("x")
-	return nil
-}
-
 func (p *peer) Write(d []byte) error {
 	//fmt.Printf("Writing to node %d: %s\n", p.id, d)
 	m := packData(p.id, d)
