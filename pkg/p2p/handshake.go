@@ -44,7 +44,7 @@ func acceptNode(connection net.Conn, token []byte) (uint16, error) {
 	}
 
 	if bytes.Compare(token, receivedToken) != 0 {
-		err := p.Write(rejected, []byte(invalidJoinToken))
+		err := p.Write(rejected, nil)
 		if err != nil {
 			return 0, err
 		}
