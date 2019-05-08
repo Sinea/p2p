@@ -7,7 +7,7 @@ import (
 )
 
 type app struct {
-	network p2p.Swarm
+	network p2p.Network
 }
 
 func (*app) HandleMessage(d []byte) {

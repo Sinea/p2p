@@ -25,7 +25,7 @@ type router interface {
 	Route(NodeID, []byte) error
 }
 
-type Swarm interface {
+type Network interface {
 	Node(NodeID) (Node, error)
 	Listen(address string) error
 	Join(address string) error

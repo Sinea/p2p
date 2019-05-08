@@ -101,7 +101,7 @@ func (n *network) Node(id NodeID) (Node, error) {
 	return nil, errors.New("not found")
 }
 
-func New(id NodeID, app Application, token []byte) Swarm {
+func New(id NodeID, app Application, token []byte) Network {
 	return &network{
 		token:           token,
 		application:     app,
