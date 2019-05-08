@@ -4,6 +4,11 @@ import "math"
 
 // Ugly code. Refactor
 
+func (n *network) setConnections(from NodeID, to []NodeID) {
+	n.peerConnections[from] = to
+	n.updateRoutingTable()
+}
+
 func (n *network) updateRoutingTable() {
 	n.peerRoutes = make(map[NodeID]Peer)
 	for id := range n.nodes {

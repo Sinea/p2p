@@ -71,30 +71,35 @@ func (n *network) Listen(address string) error {
 
 func (n *network) read() {
 	for {
-		for id, p := range n.peers {
-			cmd, data, err := p.read()
-			if err != nil {
-				delete(n.peers, id)
-				n.application.Left(p.ID())
-				continue
-			}
-
-			switch cmd {
-			case message:
-				id, body := unpackData(data)
-				if id == n.localID {
-					n.application.HandleMessage(body)
-				} else if err := n.Route(id, body); err != nil {
-					fmt.Printf("error routing message: %s\n", err)
-				}
-			}
+		for _, p := range n.peers {
+			n.readPeer(p)
 		}
 	}
 }
 
-func (n *network) setConnections(from NodeID, to []NodeID) {
-	n.peerConnections[from] = to
-	n.updateRoutingTable()
+func (n *network) readPeer(p Peer) {
+	command, body, err := p.read()
+	if err != nil {
+		delete(n.peers, p.ID())
+		n.application.Left(p.ID())
+		return
+	}
+
+	n.handleCommand(command, body)
+}
+
+func (n *network) handleCommand(command uint8, body []byte) {
+	switch command {
+	case message:
+		id, body := unpackData(body)
+		if id == n.localID {
+			n.application.HandleMessage(body)
+		} else if err := n.Route(id, body); err != nil {
+			fmt.Printf("error routing message: %s\n", err)
+		}
+	default:
+		fmt.Printf("unkown command: %d\n", command)
+	}
 }
 
 func (n *network) Route(id NodeID, b []byte) error {
