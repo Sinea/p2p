@@ -1,7 +1,9 @@
 package p2p
 
 const (
-	header   uint8 = 0xAC
+	// Control header
+	header uint8 = 0xAC
+	// Commands
 	message  uint8 = 1
 	join     uint8 = 2
 	accepted uint8 = 3
