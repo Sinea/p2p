@@ -21,7 +21,7 @@ type Peer interface {
 	read() error
 }
 
-type Router interface {
+type router interface {
 	Route(NodeID, []byte) error
 }
 

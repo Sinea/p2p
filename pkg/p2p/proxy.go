@@ -2,7 +2,7 @@ package p2p
 
 type proxy struct {
 	id     NodeID
-	router Router
+	router router
 }
 
 func (p *proxy) Write(d []byte) error {
