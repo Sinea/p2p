@@ -5,11 +5,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"net"
+	"p2p/pkg/p2p/protocol"
 )
 
 // Send token and wait for generated id
 func joinNetwork(connection net.Conn, token []byte) (uint16, uint16, error) {
-	p := NewProtocol(connection)
+	p := protocol.New(connection, 1024, header)
 	// Send the join token
 	if err := p.Write(join, token); err != nil {
 		return 0, 0, err
@@ -32,7 +33,7 @@ func joinNetwork(connection net.Conn, token []byte) (uint16, uint16, error) {
 
 // Wait for token, check the token, send back a generated id
 func acceptNode(connection net.Conn, token []byte) (uint16, error) {
-	p := NewProtocol(connection)
+	p := protocol.New(connection, 1024, header)
 	command, receivedToken, err := p.Read()
 	if err != nil {
 		return 0, err

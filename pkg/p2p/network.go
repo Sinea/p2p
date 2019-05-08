@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"p2p/pkg/p2p/protocol"
 )
 
 type network struct {
@@ -28,7 +29,7 @@ func (n *network) Join(address string) error {
 	n.localID = NodeID(allocatedID)
 	n.peers[NodeID(allocatorID)] = &peer{
 		localID:  n.localID,
-		protocol: &Proto{connection: connection, buffer: []byte{}},
+		protocol: protocol.New(connection, 1024, header),
 		handler:  n.application,
 	}
 	fmt.Printf("Accepted by %d\n", allocatorID)
@@ -58,7 +59,7 @@ func (n *network) Listen(address string) error {
 			peer := &peer{
 				id:       NodeID(allocatedID),
 				localID:  n.localID,
-				protocol: &Proto{connection: connection, buffer: []byte{}},
+				protocol: protocol.New(connection, 1024, header),
 				handler:  n.application,
 			}
 			n.peers[NodeID(allocatedID)] = peer

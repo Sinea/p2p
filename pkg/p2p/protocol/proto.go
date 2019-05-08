@@ -1,4 +1,4 @@
-package p2p
+package protocol
 
 import (
 	"encoding/binary"
@@ -11,14 +11,16 @@ import (
 // 4b LENGTH		2:6
 // Nb PAYLOAD		6:
 
-type Proto struct {
-	connection net.Conn
-	buffer     []byte
+type Protocol struct {
+	connection     net.Conn
+	buffer         []byte
+	header         uint8
+	readBufferSize uint
 }
 
-func (p *Proto) Write(command uint8, body []byte) (err error) {
+func (p *Protocol) Write(command uint8, body []byte) (err error) {
 	message := make([]byte, 6)
-	message[0] = header
+	message[0] = p.header
 	message[1] = command
 
 	if body != nil {
@@ -39,8 +41,8 @@ func (p *Proto) Write(command uint8, body []byte) (err error) {
 	return
 }
 
-func (p *Proto) Read() (command uint8, payload []byte, err error) {
-	buffer := make([]byte, bufferSize)
+func (p *Protocol) Read() (command uint8, payload []byte, err error) {
+	buffer := make([]byte, p.readBufferSize)
 	n, err := p.connection.Read(buffer)
 
 	if err != nil {
@@ -53,7 +55,7 @@ func (p *Proto) Read() (command uint8, payload []byte, err error) {
 		return
 	}
 
-	if p.buffer[0] != header {
+	if p.buffer[0] != p.header {
 		err = errors.New("invalid header")
 		return
 	}
@@ -72,9 +74,11 @@ func (p *Proto) Read() (command uint8, payload []byte, err error) {
 	return
 }
 
-func NewProtocol(conn net.Conn) *Proto {
-	return &Proto{
-		connection: conn,
-		buffer:     make([]byte, 0),
+func New(conn net.Conn, readBufferSize uint, header uint8) *Protocol {
+	return &Protocol{
+		connection:     conn,
+		readBufferSize: readBufferSize,
+		header:         header,
+		buffer:         make([]byte, 0),
 	}
 }
