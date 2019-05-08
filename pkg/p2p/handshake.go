@@ -28,7 +28,7 @@ func joinNetwork(connection net.Conn, token []byte) (uint16, uint16, error) {
 		return myID, remoteID, nil
 	}
 
-	return 0, 0, errors.New("error joining network")
+	return 0, 0, errors.New(errorJoiningNetwork)
 }
 
 // Wait for token, check the token, send back a generated id
@@ -40,15 +40,15 @@ func acceptNode(connection net.Conn, token []byte) (uint16, error) {
 	}
 
 	if command != join {
-		return 0, errors.New("no join message received")
+		return 0, errors.New(noJoinMessageReceived)
 	}
 
 	if bytes.Compare(token, receivedToken) != 0 {
-		err := p.Write(rejected, []byte("invalid join token"))
+		err := p.Write(rejected, []byte(invalidJoinToken))
 		if err != nil {
 			return 0, err
 		}
-		return 0, errors.New("invalid join token")
+		return 0, errors.New(invalidJoinToken)
 	} else {
 		err := p.Write(accepted, []byte{0, 33, 0, 22})
 		if err != nil {

@@ -98,7 +98,6 @@ func (n *network) setConnections(from NodeID, to []NodeID) {
 }
 
 func (n *network) Route(id NodeID, b []byte) error {
-	fmt.Printf("Routing message to %d\n", id)
 	if p, ok := n.peerRoutes[id]; ok {
 		return p.send(id, message, b)
 	}

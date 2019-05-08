@@ -8,6 +8,10 @@ const (
 	join     uint8 = 2
 	accepted uint8 = 3
 	rejected uint8 = 4
+	// Error messages
+	errorJoiningNetwork   = "error joining network"
+	invalidJoinToken      = "invalid join token"
+	noJoinMessageReceived = "no join message received"
 )
 
 type NodeID uint16
