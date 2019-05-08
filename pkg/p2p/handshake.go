@@ -9,7 +9,7 @@ import (
 
 // Send token and wait for generated id
 func joinNetwork(connection net.Conn, token []byte) (uint16, uint16, error) {
-	p := Proto{connection: connection, buffer: []byte{}}
+	p := NewProtocol(connection)
 	// Send the join token
 	if err := p.Write(join, token); err != nil {
 		return 0, 0, err
@@ -32,7 +32,7 @@ func joinNetwork(connection net.Conn, token []byte) (uint16, uint16, error) {
 
 // Wait for token, check the token, send back a generated id
 func acceptNode(connection net.Conn, token []byte) (uint16, error) {
-	p := Proto{connection: connection, buffer: []byte{}}
+	p := NewProtocol(connection)
 	command, receivedToken, err := p.Read()
 	if err != nil {
 		return 0, err
@@ -55,6 +55,4 @@ func acceptNode(connection net.Conn, token []byte) (uint16, error) {
 		}
 		return 33, nil
 	}
-
-	return 0, nil
 }

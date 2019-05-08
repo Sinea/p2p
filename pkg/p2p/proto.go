@@ -71,3 +71,10 @@ func (p *Proto) Read() (command uint8, payload []byte, err error) {
 
 	return
 }
+
+func NewProtocol(conn net.Conn) *Proto {
+	return &Proto{
+		connection: conn,
+		buffer:     make([]byte, 0),
+	}
+}
