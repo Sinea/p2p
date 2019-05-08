@@ -18,7 +18,8 @@ type Node interface {
 
 type Peer interface {
 	ID() NodeID
-	read() error
+	read() (command uint8, payload []byte, err error)
+	send(NodeID, uint8, []byte) error
 }
 
 type router interface {

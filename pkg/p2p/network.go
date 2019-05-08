@@ -72,10 +72,21 @@ func (n *network) Listen(address string) error {
 func (n *network) read() {
 	for {
 		for id, p := range n.peers {
-			if err := p.read(); err != nil {
-				fmt.Printf("error reading from peer %d\n", id)
+			cmd, data, err := p.read()
+			if err != nil {
 				delete(n.peers, id)
 				n.application.Left(p.ID())
+				continue
+			}
+
+			switch cmd {
+			case message:
+				id, body := unpackData(data)
+				if id == n.localID {
+					n.application.HandleMessage(body)
+				} else if err := n.Route(id, body); err != nil {
+					fmt.Printf("error routing message: %s\n", err)
+				}
 			}
 		}
 	}

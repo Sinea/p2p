@@ -2,7 +2,6 @@ package p2p
 
 import (
 	"encoding/binary"
-	"fmt"
 	"p2p/pkg/p2p/protocol"
 )
 
@@ -17,34 +16,20 @@ type peer struct {
 	protocol *protocol.Protocol
 }
 
+func (p *peer) send(id NodeID, command uint8, data []byte) error {
+	return p.protocol.Write(command, packData(id, data))
+}
+
 func (p *peer) ID() NodeID {
 	return p.id
 }
 
-func (p *peer) read() error {
-	cmd, data, err := p.protocol.Read()
-
-	if err != nil {
-		return err
-	}
-
-	switch cmd {
-	case message:
-		id, body := unpackData(data)
-		if id == p.localID {
-			p.handler.HandleMessage(body)
-		} else {
-			fmt.Println("Just pass")
-		}
-	}
-
-	return nil
+func (p *peer) read() (command uint8, payload []byte, err error) {
+	return p.protocol.Read()
 }
 
-func (p *peer) Write(d []byte) error {
-	//fmt.Printf("Writing to node %d: %s\n", p.id, d)
-	m := packData(p.id, d)
-	return p.protocol.Write(message, m)
+func (p *peer) Write(data []byte) error {
+	return p.send(p.id, message, data)
 }
 
 func packData(id NodeID, data []byte) []byte {
