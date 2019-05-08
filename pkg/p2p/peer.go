@@ -3,6 +3,7 @@ package p2p
 import (
 	"encoding/binary"
 	"fmt"
+	"p2p/pkg/p2p/protocol"
 )
 
 const (
@@ -13,7 +14,7 @@ type peer struct {
 	id       NodeID
 	handler  MessageHandler
 	localID  NodeID
-	protocol *Proto
+	protocol *protocol.Protocol
 }
 
 func (p *peer) ID() NodeID {
